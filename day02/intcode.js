@@ -7,10 +7,10 @@ const path = require('path');
 // assume there's a file "input" in the current directory
 const inputFilepath = path.join(__dirname, 'input');
 
-// reset program to 1202 program alarm state
-function reset(program) {
-    program[1] = 12;
-    program[2] = 2;
+// set program noun and verb values
+function set(program, noun, verb) {
+    program[1] = noun;
+    program[2] = verb;
 
     return program;
 }
@@ -46,8 +46,15 @@ fs.readFile(inputFilepath, { encoding: 'ascii' }).then((input) => {
     // convert file contents into intcode program
     let program = input.split(',').map(Number);
 
-    // reset the program
-    program = reset(program);
+    // read the noun/verb in from the command-line
+    let [,, noun, verb] = process.argv;
+
+    // convert them into numbers
+    noun = Number(noun);
+    verb = Number(verb);
+
+    // set the program noun and verb
+    program = set(program, noun, verb);
 
     // start with the instruction at index 0
     let instructionIndex = 0;
