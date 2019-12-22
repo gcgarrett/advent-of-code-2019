@@ -24,16 +24,19 @@ function isValid(password) {
         return 0;
     }
     
+    // build a map to count how many instances of a digit occurs in the password
+    const adjacentDigitsMap = digits.reduce((adjacentsMap, digit) => {
+        adjacentsMap[digit] = (adjacentsMap[digit] || 0) + 1;
 
-    const adjacentDigits = digits.reduce((adjacents, digit, index, parent) => {
-        if (parent[index + 1] === digit) {
-            adjacents.push(digit);
-        }
+        return adjacentsMap;
+    }, {});
 
-        return adjacents;
-    }, []);
+    // filter out those digits that occur only once
+    const adjacentDigitsCounts = Object.values(adjacentDigitsMap).filter((adjacentDigitCount) => {
+        return (adjacentDigitCount > 1);
+    });
 
-    if (adjacentDigits.length === 0) {
+    if (!(adjacentDigitsCounts.includes(2))) {
         // there is no set of two adjacent digits, so this is an invalid
         // password
         return 0;
