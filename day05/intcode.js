@@ -37,6 +37,12 @@ function questionAsync() {
 // 02 - multiply parameter 1 by parameter 2, writing to index at parameter 3
 // 03 - read single integer as input, writing it to index at parameter 1
 // 04 - write value of index at parameter 1
+// 05 - if parameter 1 is non-zero, set index to value at parameter 2
+// 06 - if parameter 1 is zero, set index to value at parameter 2
+// 07 - if parameter 1 is less than parameter 2, store 1 in parameter 3,
+//      otherwise store 0
+// 08 - if parameter 1 is equal to parameter 2, store 1 in parameter 3,
+//      otherwise store 0
 // 99 - halt the program (no parameters)
 
 // Parameter modes
@@ -52,14 +58,23 @@ function questionAsync() {
 // 0 - position mode: parameter is a position, so use value stored there or
 //     write value to that position
 // 1 - immediate mode: parameter is a value
+function getParamModes(instruction, numberOfParams) {
+    const paramModes = [];
+
+    for (let i = 0; i < numberOfParams; i++) {
+        const positionMultiplier = (10 ** i);
+        const paramMode = Math.floor(instruction / (100 * positionMultiplier)) % 10;
+
+        paramModes.push(paramMode);
+    }
+
+    return paramModes;
+}
 
 async function run(program, index) {
     const instruction = program[index];
 
     const opcode = instruction % 100;
-    const paramMode1 = Math.floor(instruction / 100) % 10;
-    const paramMode2 = Math.floor(instruction / 1000) % 10;
-    const paramMode3 = Math.floor(instruction / 10000) % 10;
 
     if (opcode === 99) {
         // halt the program
@@ -69,6 +84,8 @@ async function run(program, index) {
         let read1 = program[index + 1];
         let read2 = program[index + 2];
         let write = program[index + 3];
+
+        const [paramMode1, paramMode2] = getParamModes(instruction, 3);
 
         if (paramMode1 === 0) {
             read1 = program[read1];
@@ -86,6 +103,8 @@ async function run(program, index) {
         let read1 = program[index + 1];
         let read2 = program[index + 2];
         let write = program[index + 3];
+
+        const [paramMode1, paramMode2] = getParamModes(instruction, 3);
 
         if (paramMode1 === 0) {
             read1 = program[read1];
@@ -114,6 +133,8 @@ async function run(program, index) {
     else if (opcode === 4) {
         let read = program[index + 1];
 
+        const [paramMode1] = getParamModes(instruction, 1);
+
         if (paramMode1 === 0) {
             read = program[read];
         }
@@ -121,6 +142,96 @@ async function run(program, index) {
         console.log(`Log: ${read}`);
 
         return index + 2;
+    }
+    else if (opcode === 5) {
+        let read = program[index + 1];
+        let newIndex = program[index + 2];
+
+        const [paramMode1, paramMode2] = getParamModes(instruction, 2);
+
+        if (paramMode1 === 0) {
+            read = program[read];
+        }
+        
+        if (paramMode2 === 0) {
+            newIndex = program[newIndex];
+        }
+
+        if (read !== 0) {
+            return newIndex;
+        }
+        else {
+            return index + 3;
+        }
+    }
+    else if (opcode === 6) {
+        let read = program[index + 1];
+        let newIndex = program[index + 2];
+
+        const [paramMode1, paramMode2] = getParamModes(instruction, 2);
+
+        if (paramMode1 === 0) {
+            read = program[read];
+        }
+        
+        if (paramMode2 === 0) {
+            newIndex = program[newIndex];
+        }
+
+        if (read === 0) {
+            return newIndex;
+        }
+        else {
+            return index + 3;
+        }
+    }
+    else if (opcode === 7) {
+        let read1 = program[index + 1];
+        let read2 = program[index + 2];
+        let write = program[index + 3];
+
+        const [paramMode1, paramMode2] = getParamModes(instruction, 3);
+
+        if (paramMode1 === 0) {
+            read1 = program[read1];
+        }
+        
+        if (paramMode2 === 0) {
+            read2 = program[read2];
+        }
+
+        if (read1 < read2) {
+            program[write] = 1;
+        }
+        else {
+            program[write] = 0;
+        }
+
+        return index + 4;
+    }
+    else if (opcode === 8) {
+        let read1 = program[index + 1];
+        let read2 = program[index + 2];
+        let write = program[index + 3];
+
+        const [paramMode1, paramMode2] = getParamModes(instruction, 3);
+
+        if (paramMode1 === 0) {
+            read1 = program[read1];
+        }
+        
+        if (paramMode2 === 0) {
+            read2 = program[read2];
+        }
+
+        if (read1 === read2) {
+            program[write] = 1;
+        }
+        else {
+            program[write] = 0;
+        }
+
+        return index + 4;
     }
     else {
         throw new Error(`Invalid opcode ${opcode}`);
